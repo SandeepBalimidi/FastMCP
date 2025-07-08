@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Email Prompt Tool</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f7f9fc;
+      display: flex;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .container {
+      background: white;
+      padding: 2rem;
+      max-width: 700px;
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    label {
+      font-weight: bold;
+      margin-top: 1rem;
+      display: block;
+    }
+    textarea, input, button {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-top: 0.5rem;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      margin-top: 1.5rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    pre {
+      background: #f1f1f1;
+      padding: 1rem;
+      margin-top: 1.5rem;
+      border-radius: 6px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📨 AI Email Prompt Interface</h2>
+
+    <label for="prompt">Instruction Prompt</label>
+    <textarea id="prompt" rows="4" placeholder="e.g., Distribute the following email subjects among the agents based on urgency and content."></textarea>
+
+    <label for="subjects">Email Subjects (one per line)</label>
+    <textarea id="subjects" rows="5" placeholder="Interview Invitation from Google\nMeeting with product team\nNewsletter: AI Weekly"></textarea>
+
+    <button onclick="submitPrompt()">Send to AI</button>
+
+    <pre id="responseArea"></pre>
+  </div>
+
+  <script>
+    async function submitPrompt() {
+      const prompt = document.getElementById("prompt").value.trim();
+      const subjectsRaw = document.getElementById("subjects").value.trim();
+      const responseArea = document.getElementById("responseArea");
+
+      if (!prompt || !subjectsRaw) {
+        alert("Please enter both the prompt and subjects.");
+        return;
+      }
+
+      const subjects = subjectsRaw.split("\n").map(s => s.trim()).filter(Boolean);
+
+      const payload = {
+        prompt: prompt,
+        subjects: subjects,
+        agents: ["agent_1", "agent_2"]
+      };
+
+      responseArea.textContent = "⏳ Waiting for AI response...";
+
+      try {
+        const res = await fetch("http://localhost:8000/assign_emails", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        responseArea.textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        responseArea.textContent = "❌ Error: " + error.message;
+      }
+    }
+  </script>
+</body>
+</html>
